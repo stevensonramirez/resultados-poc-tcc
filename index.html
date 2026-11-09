@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resultados PoC TCC</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: documento de una columna (máx. 860px), resumen arriba, criterios como fichas con estado, evidencia al final. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --ink:#131c2e; --muted:#566178; --line:#dbe1ea;
+  --accent:#1d57c9; --accent-soft:#e6eefc;
+  --ok:#157a4e; --ok-soft:#e1f3ea; --warn:#9a6400; --warn-soft:#fbefd4; --bad:#b3261e; --bad-soft:#fbe6e4; --na:#566178; --na-soft:#e9edf3;
+  --display:"Space Grotesk","Segoe UI",system-ui,sans-serif;
+  --body:"Inter","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e1420; --surface:#161e2e; --ink:#e8edf6; --muted:#9aa6bd; --line:#2a3550;
+  --accent:#7ea8ff; --accent-soft:#1b2a4a;
+  --ok:#5fd39a; --ok-soft:#12332a; --warn:#f0bf5a; --warn-soft:#3a2d10; --bad:#ff8a80; --bad-soft:#3d1a18; --na:#9aa6bd; --na-soft:#222c40;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0e1420; --surface:#161e2e; --ink:#e8edf6; --muted:#9aa6bd; --line:#2a3550;
+  --accent:#7ea8ff; --accent-soft:#1b2a4a;
+  --ok:#5fd39a; --ok-soft:#12332a; --warn:#f0bf5a; --warn-soft:#3a2d10; --bad:#ff8a80; --bad-soft:#3d1a18; --na:#9aa6bd; --na-soft:#222c40;
+  color-scheme:dark }
+*{box-sizing:border-box}
+img{max-width:100%}
+:root{color-scheme:light}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.doc{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:48px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.5rem;font-weight:700;letter-spacing:-.01em;border-top:2px solid var(--ink);padding-top:14px}
+h3{font-size:1.06rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.draft{display:inline-block;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:4px}
+header{display:flex;flex-direction:column;gap:10px}
+.meta{color:var(--muted);font-size:.92rem}
+section{display:flex;flex-direction:column;gap:16px}
+.lead{font-size:1.06rem;max-width:68ch}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.ok{background:var(--ok-soft);color:var(--ok)} .warn{background:var(--warn-soft);color:var(--warn)} .bad{background:var(--bad-soft);color:var(--bad)} .na{background:var(--na-soft);color:var(--na)}
+.score{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.score div{background:var(--surface);padding:14px 16px;min-width:0}
+.score b{display:block;font-family:var(--display);font-size:1.9rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.score span{font-size:.84rem;color:var(--muted)}
+.crit{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.crit-head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.crit-head h3{min-width:0;flex:1 1 240px}
+.crit ul,.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.crit li,.plain li{max-width:70ch}
+.gap{border-left:3px solid var(--warn);padding-left:10px;color:var(--muted);font-size:.92rem}
+.gap b{color:var(--ink)}
+.crit-head{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.index{list-style:none;counter-reset:c;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.index li{counter-increment:c;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--line)}
+.index li:last-child{border-bottom:0}
+.index li>span:first-child{min-width:0;font-weight:500}
+.index li>span:first-child::before{content:counter(c) ". ";color:var(--muted);font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+figure{margin:0;display:flex;flex-direction:column;gap:6px}
+figure img{width:100%;height:auto;max-width:100%;border:1px solid var(--line);border-radius:8px;background:#f8f9fb}
+figcaption{font-size:.86rem;color:var(--muted)}
+.dl{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.dl-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+.dl-row:last-child{border-bottom:0}
+.dl-row span{min-width:0;flex:1 1 200px;font-weight:500}
+.dl-btns{display:flex;gap:8px}
+.dl a{text-decoration:none;display:inline-block;font:inherit;font-size:.86rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid transparent;border-radius:6px;padding:6px 12px;cursor:pointer}
+.dl a:hover{border-color:var(--accent)}
+.dl a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+hr{border:0;border-top:1px solid var(--line);margin:0}
+footer{color:var(--muted);font-size:.86rem}
+@media (max-width:520px){ .score{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<header>
+  <span class="eyebrow">Prueba de concepto · Observabilidad del liquidador</span>
+  <h1>Resultados de la PoC de Dynatrace en TCC</h1>
+  <p class="meta">Ambiente de calidad y desarrollo en OCI · 22 de julio al 1 de octubre de 2026 · Ejecutada con SETI</p>
+  <div><span class="draft">Borrador para revisión</span></div>
+</header>
+
+<section>
+  <h2>Archivos originales</h2>
+  <p class="muted small" id="dl-msg">Los cinco tableros completos, en PDF y en imagen de alta resolución, para reutilizarlos en otro informe.</p>
+  <div class="dl" id="dl">
+    <div class="dl-row"><span>Vista de negocio</span><div class="dl-btns"><a id="dl-negocio-pdf" href="pdf/tcc-vista-de-negocio.pdf" download>PDF</a><a id="dl-negocio-png" href="png/tcc-vista-de-negocio.png" download>Imagen</a></div></div>
+    <div class="dl-row"><span>Mapa y estadísticas</span><div class="dl-btns"><a id="dl-mapa-pdf" href="pdf/tcc-mapa-y-estadisticas.pdf" download>PDF</a><a id="dl-mapa-png" href="png/tcc-mapa-y-estadisticas.png" download>Imagen</a></div></div>
+    <div class="dl-row"><span>Nuevo modelo frente al tradicional</span><div class="dl-btns"><a id="dl-nmt-pdf" href="pdf/tcc-nmt-vs-mtt.pdf" download>PDF</a><a id="dl-nmt-png" href="png/tcc-nmt-vs-mtt.png" download>Imagen</a></div></div>
+    <div class="dl-row"><span>Salud de servicios y Oracle WebLogic</span><div class="dl-btns"><a id="dl-weblogic-pdf" href="pdf/tcc-weblogic.pdf" download>PDF</a><a id="dl-weblogic-png" href="png/tcc-weblogic.png" download>Imagen</a></div></div>
+    <div class="dl-row"><span>Experiencia de usuario</span><div class="dl-btns"><a id="dl-rum-pdf" href="pdf/tcc-experiencia-de-usuario.pdf" download>PDF</a><a id="dl-rum-png" href="png/tcc-experiencia-de-usuario.png" download>Imagen</a></div></div>
+  </div>
+</section>
+
+
+<section>
+  <h2>Resumen</h2>
+  <p class="lead">La PoC puso bajo observación el proceso de liquidación de punta a punta: el nuevo modelo tarifario en Kubernetes, el modelo tradicional en Oracle WebLogic, MongoDB, Redis y la experiencia de los usuarios internos. De los seis criterios de éxito acordados, cinco se cumplieron y uno quedó parcial.</p>
+  <div class="score">
+    <div><b>5</b><span>criterios cumplidos</span></div>
+    <div><b>1</b><span>criterio parcial (trazas de punta a punta)</span></div>
+    <div><b>0</b><span>criterios sin cumplir</span></div>
+  </div>
+  <ol class="index">
+    <li><span>Seguimiento de hilos en WebLogic</span><span class="pill ok">Cumplido</span></li>
+    <li><span>Alertas por degradación en tiempos de servicio</span><span class="pill ok">Cumplido</span></li>
+    <li><span>Picos de CPU y memoria en los microservicios del nuevo liquidador</span><span class="pill ok">Cumplido</span></li>
+    <li><span>Análisis de logs de MongoDB</span><span class="pill ok">Cumplido</span></li>
+    <li><span>Trazas en todo el proceso</span><span class="pill warn">Parcial</span></li>
+    <li><span>Tablero estratégico en lenguaje de negocio</span><span class="pill ok">Cumplido</span></li>
+  </ol>
+  <p class="muted small">Las cifras de este documento corresponden a la semana del 20 al 26 de septiembre de 2026 en un ambiente no productivo. Sirven para demostrar la capacidad, no para sacar conclusiones del negocio en producción.</p>
+</section>
+
+<section>
+  <h2>Criterios de éxito</h2>
+
+  <div class="crit">
+    <div class="crit-head"><h3>1. Seguimiento de hilos en WebLogic</h3><span class="pill ok">Cumplido</span></div>
+    <ul>
+      <li>Los <b>18 servidores</b> administrados de los tres dominios (QA01, OSB y SOA) quedaron visibles con hilos, heap, pausas de GC y CPU por servidor.</li>
+      <li>El cluster Gos sostiene entre <b>337 y 356 hilos</b> por servidor, frente a 56 a 90 en el resto de QA01. Es el punto a vigilar.</li>
+      <li>Dos alertas activas: acumulación de hilos con línea base adaptativa y detección de hilos bloqueados por el código <code>BEA-000337</code>. En la semana medida hubo <b>0 hilos bloqueados</b>.</li>
+    </ul>
+    <p class="gap"><b>Límite:</b> se mide el conteo de hilos de la JVM. El detalle de los pools de ejecución por JMX no se habilitó.</p>
+  </div>
+
+  <div class="crit">
+    <div class="crit-head"><h3>2. Alertas por degradación en tiempos de servicio</h3><span class="pill ok">Cumplido</span></div>
+    <ul>
+      <li>Tres alertas sobre el percentil 95: liquidador nuevo por encima de <b>1,5 s</b>, WebLogic QA01 por encima de <b>5 s</b> y MongoDB o Redis por encima de <b>1 s</b>.</li>
+      <li>El liquidador nuevo cerró la semana con p95 de <b>1,37 s</b>, con picos de hasta 10 s en los arranques de carga de los primeros días.</li>
+      <li>MongoDB mostró picos de p95 de hasta 400 ms. Redis se mantuvo por debajo de 50 ms.</li>
+    </ul>
+    <p class="gap"><b>Límite:</b> la latencia del salto por la VPN entre Kubernetes y WebLogic no se aisló como medida propia.</p>
+  </div>
+
+  <div class="crit">
+    <div class="crit-head"><h3>3. Picos de CPU y memoria en los microservicios del nuevo liquidador</h3><span class="pill ok">Cumplido</span></div>
+    <ul>
+      <li>CPU y memoria por microservicio en el cluster <code>tcc-k8s-dev-01</code>. El consumo de CPU es bajo, por debajo de 20 milicores.</li>
+      <li><code>liquidadormanager-ms</code> subió de cerca de 550 MB a casi 800 MB entre el 23 y el 25 de septiembre y luego bajó a 450 MB. Es el patrón que este criterio buscaba detectar.</li>
+      <li>Se añadió saturación del cluster: frenado de CPU, reinicios y pods por fase. El 26 de septiembre había <b>9 problemas abiertos</b> por pods sin iniciar, en espera o desalojados.</li>
+    </ul>
+  </div>
+
+  <div class="crit">
+    <div class="crit-head"><h3>4. Análisis de logs de MongoDB</h3><span class="pill ok">Cumplido</span></div>
+    <ul>
+      <li>El archivo <code>mongod.log</code> del servidor <code>mongo-dev</code> se ingiere y se consulta junto con las trazas y métricas del liquidador.</li>
+      <li>La extensión de MongoDB quedó activa con su tablero de conexiones, operaciones e índices para la base <code>smartlogic</code>.</li>
+    </ul>
+    <p class="gap"><b>Límite:</b> la extensión quedó en la versión 2.2 porque la base no usa TLS. El volumen de log en este ambiente es bajo, del orden de 100 registros por día.</p>
+  </div>
+
+  <div class="crit">
+    <div class="crit-head"><h3>5. Trazas en todo el proceso</h3><span class="pill warn">Parcial</span></div>
+    <ul>
+      <li>Hay trazas completas dentro de Kubernetes. Un ejemplo recorre <b>8 servicios y 102 pasos</b>, desde el orquestador hasta Oracle y Redis.</li>
+      <li>Hay trazas completas dentro de WebLogic.</li>
+    </ul>
+    <p class="gap"><b>Brecha 1:</b> <code>liquidador-ms</code> y <code>liquidadormanager-ms</code> no quedaron instrumentados, así que la traza de una liquidación termina en el orquestador.<br><b>Brecha 2:</b> no se observó una traza que cruce de Kubernetes a WebLogic. Se corrige al instrumentar esos dos servicios y validar con tráfico real.</p>
+  </div>
+
+  <div class="crit">
+    <div class="crit-head"><h3>6. Tablero estratégico en lenguaje de negocio</h3><span class="pill ok">Cumplido</span></div>
+    <ul>
+      <li>Dos tableros construidos con solo dos servicios del liquidador: vista de negocio y mapa de rutas con estadísticas.</li>
+      <li>Muestran intentos de liquidación, motivo de rechazo, valor cotizado, descuentos, peso declarado frente a kilos cobrados, rutas, sedes y canal de origen.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Lo que se vio del negocio</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Indicador</th><th>Valor en 7 días</th><th>Lectura</th></tr></thead>
+      <tbody>
+        <tr><td>Intentos de liquidación</td><td class="n">32.842</td><td>Todos pasan por el orquestador hacia <code>liquidador-ms</code>.</td></tr>
+        <tr><td>Rechazos por regla de negocio</td><td class="n">91,2 %</td><td>Cerca de 18 mil por tarifa inexistente para el trayecto y 5 mil por tipo de servicio inválido. Es esperable en pruebas.</td></tr>
+        <tr><td>Valor total cotizado</td><td class="n">$ 262.650.912</td><td>Suma de las liquidaciones exitosas.</td></tr>
+        <tr><td>Valor promedio por cotización</td><td class="n">$ 91.452</td><td>Varía por canal de origen.</td></tr>
+        <tr><td>Cotizaciones con descuento</td><td class="n">52 %</td><td>Incluye el descuento de empleado.</td></tr>
+        <tr><td>Trayectos más cotizados</td><td class="n">3 rutas</td><td>Medellín a Medellín (9.330), Medellín a Bogotá (8.977) y Bogotá a Bogotá (7.714).</td></tr>
+        <tr><td>Sedes con actividad</td><td class="n">14</td><td>Identificadas por el inicio de sesión de los usuarios.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">De los indicadores de negocio planteados al inicio, se midió la exactitud de liquidación. La tasa de reproceso y el ahorro por validaciones no se midieron: necesitan datos de producción y una regla acordada con TCC.</p>
+</section>
+
+<section>
+  <h2>Hallazgos técnicos</h2>
+  <div class="two">
+    <div class="box">
+      <h3>Experiencia de los usuarios</h3>
+      <ul class="plain">
+        <li><b>77,7 %</b> de las 537 sesiones tuvo al menos un error.</li>
+        <li>Varias pantallas tardan más de 40 segundos en responder.</li>
+        <li>El inicio de sesión devolvió errores 401 y 500 en la semana.</li>
+        <li>Session Replay quedó activo para ver cada sesión por dentro.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Nuevo modelo frente al tradicional</h3>
+      <ul class="plain">
+        <li>Liquidador nuevo: 34 mil solicitudes. WebLogic QA01: 254 mil.</li>
+        <li>Disponibilidad del liquidador nuevo: <b>99,9 %</b> sobre un objetivo de 98 %.</li>
+        <li>Solicitudes por debajo de 1,5 s: <b>98,4 %</b> sobre un objetivo de 95 %.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>WebLogic</h3>
+      <ul class="plain">
+        <li>521 mil solicitudes con <b>0,16 %</b> de error y p95 de 1 s.</li>
+        <li>El cluster Gos usa cerca del 72 % de un heap de 2 GB.</li>
+        <li>Pausas de GC de hasta 60 % en el arranque diario.</li>
+        <li>Algunos servicios pequeños fallan en más del 20 % de sus llamadas.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Seguridad</h3>
+      <ul class="plain">
+        <li>Más de <b>800 vulnerabilidades</b> detectadas, entre 3 y 4 críticas.</li>
+        <li>Una crítica en una librería Java tiene exploit público y corrección disponible.</li>
+        <li>La revisión de configuración de Kubernetes aprobó el 36 % de las reglas.</li>
+        <li>No se detectaron ataques durante la PoC.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Lo que quedó por fuera</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Tema</th><th>Estado</th><th>Motivo</th></tr></thead>
+      <tbody>
+        <tr><td>Monitoreo sintético de la URL de liquidación</td><td><span class="pill na">No realizado</span></td><td>La URL es interna y requiere un ActiveGate dedicado dentro de la red de TCC.</td></tr>
+        <tr><td>Pronóstico de negocio</td><td><span class="pill na">No concluyente</span></td><td>Los datos de un ambiente de pruebas no tienen una tendencia real.</td></tr>
+        <tr><td>Agente completo en Kubernetes</td><td><span class="pill warn">Parcial</span></td><td>Dos microservicios del liquidador quedaron sin instrumentar.</td></tr>
+        <tr><td>Producción</td><td><span class="pill na">Fuera de alcance</span></td><td>La PoC se ejecutó solo en calidad y desarrollo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Siguientes pasos recomendados</h2>
+  <ul class="plain">
+    <li><b>Llevarlo a producción antes de la temporada.</b> El dimensionamiento de la arquitectura productiva ya está en curso con SETI.</li>
+    <li><b>Cerrar la brecha de trazas.</b> Instrumentar <code>liquidador-ms</code> y <code>liquidadormanager-ms</code> y validar el cruce hacia WebLogic.</li>
+    <li><b>Acordar las reglas de negocio.</b> Definir con TCC qué cuenta como error de liquidación y los objetivos de disponibilidad y latencia.</li>
+    <li><b>Proteger los datos personales.</b> Enmascarar los campos sensibles de las solicitudes antes de capturarlas en producción.</li>
+    <li><b>Habilitar el monitoreo sintético.</b> Instalar un ActiveGate dedicado para probar la URL de liquidación desde la red interna.</li>
+    <li><b>Atender las vulnerabilidades críticas.</b> Empezar por la librería Java con exploit público.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Evidencia</h2>
+  <p class="muted small">Capturas de los tableros tomadas el 26 de septiembre de 2026. La versión completa de cada uno está en la sección de archivos originales, al inicio.</p>
+  <figure><img src="img/negocio.jpg" alt="Tablero de vista de negocio del liquidador con intentos, tasa de error, motivo del resultado y trayectos" loading="lazy"><figcaption>Vista de negocio: intentos de liquidación, motivo del resultado y trayectos.</figcaption></figure>
+  <figure><img src="img/mapa.jpg" alt="Mapa de ciudades de origen y destino, rutas solicitadas, pulso por hora y sedes activas" loading="lazy"><figcaption>Mapa y estadísticas: origen, destino, rutas y sedes activas.</figcaption></figure>
+  <figure><img src="img/nmt.jpg" alt="Tablero comparativo del nuevo modelo tarifario en Kubernetes frente al modelo tradicional en WebLogic" loading="lazy"><figcaption>Nuevo modelo tarifario frente al tradicional, con sus dos objetivos de servicio.</figcaption></figure>
+  <figure><img src="img/weblogic.jpg" alt="Tablero de salud de servicios de Oracle WebLogic con solicitudes, error, latencia, servidores e hilos bloqueados" loading="lazy"><figcaption>Salud de servicios y Oracle WebLogic.</figcaption></figure>
+  <figure><img src="img/rum.jpg" alt="Tablero de experiencia de usuario con sesiones, sesiones con error, acciones lentas y errores de red" loading="lazy"><figcaption>Experiencia de usuario con sesiones reales.</figcaption></figure>
+</section>
+
+<hr>
+<footer>
+  <p>El ambiente de la PoC cerró el 1 de octubre de 2026. Los tableros, alertas y objetivos de servicio se reconstruyen sobre un ambiente nuevo a partir de las consultas y capturas conservadas.</p>
+</footer>
+
+</div>
+</body>
+</html>
